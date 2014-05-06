@@ -4,13 +4,16 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.9.0'
+        classpath 'com.android.tools.build:gradle:0.9.+'
+        // for aar/maven stuff
+	// https://github.com/dcendents/android-maven-plugin
+        classpath 'com.github.dcendents:android-maven-plugin:1.0'
     }
 }
 
 apply plugin: 'android-library'
-apply plugin: 'maven'
-apply plugin: 'signing'
+apply plugin: 'android-maven'
+//apply plugin: 'signing'
 
 dependencies {
     repositories {
@@ -21,7 +24,7 @@ dependencies {
 
 android {
     compileSdkVersion 19
-    buildToolsVersion "19.0.0"
+    buildToolsVersion "19.0.1"
 
     sourceSets {
         main {
@@ -33,10 +36,10 @@ android {
 }
 
 
-signing {
-    required { has("release") && gradle.taskGraph.hasTask("uploadArchives") }
-    sign configurations.archives
-}
+//signing {
+//    required { has("release") && gradle.taskGraph.hasTask("uploadArchives") }
+//    sign configurations.archives
+//}
 
 group = 'com.github.komissarovdenis.afilechooser'
 version = 1.12
