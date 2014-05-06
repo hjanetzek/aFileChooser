@@ -14,6 +14,7 @@ buildscript {
 apply plugin: 'android-library'
 apply plugin: 'android-maven'
 //apply plugin: 'signing'
+apply plugin: 'eclipse'
 
 
 dependencies {
@@ -44,41 +45,50 @@ android {
 //    sign configurations.archives
 //}
 
-group = 'com.github.komissarovdenis.afilechooser'
+group = 'io.github.hjanetzek.afilechooser'
 version = 1.12
 
-uploadArchives {
-    configuration = configurations.archives
-    repositories.mavenDeployer {
-        repository(url: "file://" + new File(".").absolutePath + "/repo")
+eclipse {
+  classpath {
+    plusConfigurations += configurations.compile
 
-        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+    //customizing the classes output directory:
+    defaultOutputDir = file('bin/classes')
 
-        pom.project {
-            name 'aFileChooser Library'
-            packaging 'aar'
-            description 'aFileChooser library for Android applications'
-            url 'https://github.com/komissarovdenis/aFileChooser'
-
-            scm {
-                url 'scm:git@github.com:komissarovdenis/aFileChooser.git'
-                connection 'scm:git@github.com:komissarovdenis/aFileChooser.git'
-                developerConnection 'scm:git@github.com:komissarovdenis/aFileChooser.git'
-            }
-
-            licenses {
-                license {
-                    name 'The Apache Software License, Version 2.0'
-                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    distribution 'repo'
-                }
-            }
-
-            developers {
-                developer {
-                    id 'ipaulpro'
-                }
-            }
+    file {
+      // Manipulation of the classpath XML before merging local
+      // and generated copies
+      beforeMerged { classpath ->
+        // Remove all source entries to avoid overlap
+        classpath.entries.removeAll() { c ->
+          c.kind == 'src'
         }
+      }
+
+      // only used to explode jni .so into aar
+      whenMerged { classpath ->
+        classpath.entries.findAll { entry ->
+          entry.path.contains('native-libs') }*.exported = false
+      }
+
+      // Direct manipulation of the generated classpath XML
+      withXml {
+        // Since non-default source directories are used
+        // they need to be manually added to the classpath XML
+        def node = it.asNode()
+        // Main source directory and generated code directory
+        node.appendNode('classpathentry kind="src" path="src"')
+        node.appendNode('classpathentry kind="src" path="gen"')
+
+      }
     }
+  }
+  project {
+    natures = ['com.android.ide.eclipse.adt.AndroidNature',
+               'org.eclipse.jdt.core.javanature']
+    buildCommand 'com.android.ide.eclipse.adt.ResourceManagerBuilder'
+    buildCommand 'com.android.ide.eclipse.adt.PreCompilerBuilder'
+    buildCommand 'com.android.ide.eclipse.adt.ApkBuilder'
+  }
 }
+
