@@ -15,11 +15,14 @@ apply plugin: 'android-library'
 apply plugin: 'android-maven'
 //apply plugin: 'signing'
 
+
 dependencies {
     repositories {
         mavenCentral()
+	maven { url "${System.env.ANDROID_HOME}/extras/android/m2repository" }
     }
-    compile files ("libs/android-support-v4.jar")
+    //provided files ("libs/android-support-v4.jar")
+    compile 'com.android.support:support-v4:19.1.0'
 }
 
 android {
